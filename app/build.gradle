@@ -1,0 +1,49 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 25
+        versionCode 2
+        versionName "1.02"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            java {
+                srcDir 'src/main/java'
+            }
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+task clearJar(type: Delete) {
+    delete 'build/libs/CardEncryptionLib.jar'
+}
+
+task addReadMe(type: Copy) {
+     from('README.md')
+     into('build/intermediates/classes/release/META-INF/')
+}
+
+task makeJar(type: Copy) {
+    from('build/intermediates/bundles/default/')
+    into('build/libs/')
+    include('classes.jar')
+    rename ('classes.jar', 'CardEncryptionLib.jar')
+}
+
+makeJar.dependsOn(clearJar,addReadMe, build)
