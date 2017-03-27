@@ -10,7 +10,7 @@
  *
  */
 
-package com.aol.obi.android.lib.one;
+package com.aol.obi.android.lib;
 
 import android.os.AsyncTask;
 import android.util.Base64;
