@@ -1,4 +1,10 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+group = "com.aol.obi"
+archivesBaseName = "android-tokenization-lib"
+version = "1.4.7"
 
 android {
     compileSdkVersion 25
@@ -45,7 +51,32 @@ build {
 
 task makeJar(type: Jar) {
       from('build/intermediates/classes/release/')
-      archiveName 'CardEncryptionLib.jar'
+      archiveName 'android-tokenization-lib.jar'
 }
 
-makeJar.dependsOn(clearJar,build)
+makeJar.dependsOn(clearJar)
+
+task javadoc(type: Javadoc) {
+    failOnError false
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    classpath += configurations.compile
+}
+
+// build a jar with javadoc
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+
+    include("**/EncryptCard.java")
+}
+
+artifacts {
+    archives makeJar, javadocJar, sourcesJar
+}
+
