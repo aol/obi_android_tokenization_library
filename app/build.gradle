@@ -4,7 +4,7 @@ apply plugin: 'signing'
 
 group = "com.aol.obi"
 archivesBaseName = "android-tokenization-lib"
-version = "1.4.7"
+version = "1.0"
 
 android {
     compileSdkVersion 25
@@ -80,3 +80,51 @@ artifacts {
     archives makeJar, javadocJar, sourcesJar
 }
 
+signing {
+    sign configurations.archives
+}
+
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'OBI Tokenization Android Library'
+        packaging 'jar'
+        // optionally artifactId can be defined here 
+        description 'This library can be used to tokenize sensitive information'
+        url 'https://github.com/aol/obi_android_tokenization_library'
+
+        scm {
+          connection 'scm:git@github.com:aol/obi_android_tokenization_library.git'
+          developerConnection 'scm:git@github.com:aol/obi_android_tokenization_library.git'
+          url 'https://github.com/aol/obi_android_tokenization_library'
+        }
+
+        licenses {
+          license {
+            name 'Private / Commercial'
+          }
+        }
+
+        developers {
+          developer {
+            id 'jagadeeshaluri00'
+            name 'Jagadeesh Aluri'
+            email 'Jagadeesh.Aluri@teamaol.com'
+          }
+        }
+      }
+    }
+  }
+}
