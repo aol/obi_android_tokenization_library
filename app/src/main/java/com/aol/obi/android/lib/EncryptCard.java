@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.UUID;
@@ -56,6 +57,7 @@ public class EncryptCard {
 
         String cardNumberWithCvv = cardNumber + ";" + cardCvv;
         String encodedCardNumber = EncryptCard.encrypt(cardNumberWithCvv, reqToken);
+        String cardType = getCardType(cardNumber);
 
         TokenizePaymentMethod tokenizePaymentMethod = new TokenizePaymentMethod();
 
@@ -90,7 +92,17 @@ public class EncryptCard {
 
                     JSONObject oneObjectData = jObjectTokenizedPaymentMethod.getJSONObject("data");
                     JSONObject oneObjectResponse = oneObjectData.getJSONObject("m:tokenizePaymentMethodResponse");
-                    return oneObjectResponse.getString("m:result")+";"+reqToken;
+                    String fullResult = oneObjectResponse.getString("m:result")+";"+reqToken+";;"+cardType;
+                    String encodedFullResult = "";
+
+                    try {
+                        byte[] fullResultByte = fullResult.getBytes("UTF-8");
+                        encodedFullResult = Base64.encodeToString(fullResultByte, Base64.NO_WRAP);
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+
+                    return encodedFullResult;
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -136,6 +148,32 @@ public class EncryptCard {
             }
         }
         return in;
+    }
+
+    private static String getCardType(String cardNumber) {
+        String cardType = "";
+
+        if (cardNumber.length() > 2) {
+            if (cardNumber.startsWith("4")) {
+                cardType = "VISA";
+            } else if((Short.valueOf(cardNumber.substring(0, 2))>=51 && Short.valueOf(cardNumber.substring(0, 2))<=55) ||
+                    (Short.valueOf(cardNumber.substring(0, 4))>=2221 && Short.valueOf(cardNumber.substring(0, 4))<=2720)){
+                cardType = "MASTER_CARD";
+            }else if ( cardNumber.startsWith("34") || cardNumber.startsWith("37") ) {
+                cardType = "AMERICAN_EXPRESS";
+            } else if ( (Integer.parseInt(cardNumber.substring(0, 3)) > 299 &&
+                    Integer.parseInt(cardNumber.substring(0, 3)) < 306 ) ||
+                    cardNumber.startsWith("36") || cardNumber.startsWith("38") ) {
+                cardType = "DINERS CLUB";
+            } else if ( cardNumber.startsWith("6011") || cardNumber.startsWith("65") ) {
+                cardType = "DISCOVER";
+            } else if ( cardNumber.startsWith("1800") || cardNumber.startsWith("2131") ||
+                    cardNumber.startsWith("35")) {
+                cardType = "JCB";
+            }
+        }
+
+        return cardType;
     }
 
     private static class TokenizePaymentMethod extends AsyncTask<String, Void, String > {
