@@ -1,3 +1,6 @@
+
+# ARCHIVED 
+
 Add CardEncryptionLib.jar file into libs folder of your Android project.
 Right click --> Add as Library
 
